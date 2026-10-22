@@ -57,7 +57,6 @@ async def send_message(
             )
         return await message.reply(
             text=text,
-
             disable_notification=True,
             reply_markup=buttons,
             parse_mode=parse_mode,
@@ -117,7 +116,6 @@ async def send_file(message, file, caption="", buttons=None):
     try:
         return await message.reply_document(
             document=file,
-
             caption=caption,
             disable_notification=True,
             reply_markup=buttons,

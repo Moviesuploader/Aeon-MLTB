@@ -18,7 +18,6 @@ from logging import (
     info as log_info,
 )
 from os import path, remove
-from subprocess import run as srun
 from sys import exit
 
 from pymongo.mongo_client import MongoClient
@@ -118,6 +117,4 @@ UPSTREAM_BRANCH = (
 # Safe startup mode:
 # Do not delete .git or reset source files automatically at runtime.
 # Update the repository manually after reviewing changes.
-log_info(
-    "Automatic source update skipped; preserving the checked-out repository."
-)
+log_info("Automatic source update skipped; preserving the checked-out repository.")
