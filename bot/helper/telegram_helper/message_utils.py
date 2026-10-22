@@ -50,7 +50,6 @@ async def send_message(
         if photo:
             return await message.reply_photo(
                 photo=photo,
-                reply_to_message_id=message.id,
                 caption=text,
                 reply_markup=buttons,
                 disable_notification=True,
@@ -58,7 +57,7 @@ async def send_message(
             )
         return await message.reply(
             text=text,
-            quote=True,
+
             disable_notification=True,
             reply_markup=buttons,
             parse_mode=parse_mode,
@@ -118,7 +117,7 @@ async def send_file(message, file, caption="", buttons=None):
     try:
         return await message.reply_document(
             document=file,
-            quote=True,
+
             caption=caption,
             disable_notification=True,
             reply_markup=buttons,

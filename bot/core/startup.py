@@ -323,10 +323,8 @@ async def load_configurations():
     loads shorteners, and sets up service accounts if accounts.zip exists.
     """
 
-    process = await create_subprocess_shell(
-        "uv pip install -U truelink",
-    )
-    await process.wait()
+    # truelink is installed during the Docker image build.
+    # Avoid runtime package installation; uv is not required.
     from truelink import TrueLinkResolver
 
     from bot.helper.mirror_leech_utils.download_utils.insta_resolver import (

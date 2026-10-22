@@ -115,28 +115,9 @@ UPSTREAM_BRANCH = (
     or "main"
 )
 
-if UPSTREAM_REPO:
-    if path.exists(".git"):
-        srun(["rm", "-rf", ".git"], check=False)
-
-    update = srun(
-        [
-            f"git init -q \
-                     && git config --global user.email e.anastayyar@gmail.com \
-                     && git config --global user.name mltb \
-                     && git add . \
-                     && git commit -sm update -q \
-                     && git remote add origin {UPSTREAM_REPO} \
-                     && git fetch origin -q \
-                     && git reset --hard origin/{UPSTREAM_BRANCH} -q",
-        ],
-        shell=True,
-        check=False,
-    )
-
-    if update.returncode == 0:
-        log_info("Successfully updated with latest commit from UPSTREAM_REPO")
-    else:
-        log_error(
-            "Something went wrong while updating, check UPSTREAM_REPO if valid or not!",
-        )
+# Safe startup mode:
+# Do not delete .git or reset source files automatically at runtime.
+# Update the repository manually after reviewing changes.
+log_info(
+    "Automatic source update skipped; preserving the checked-out repository."
+)
