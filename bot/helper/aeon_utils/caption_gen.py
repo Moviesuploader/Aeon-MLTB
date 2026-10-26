@@ -58,15 +58,27 @@ async def generate_caption(filename, directory, caption_template):
     video_duration = round(float(video_metadata.get("Duration", 0)))
     video_quality = get_video_quality(video_metadata.get("Height", None))
 
+    # MediaInfo can expose a readable language name separately from its ISO code.
+    # Parse every track, then discard empty results before joining; otherwise an
+    # unrecognised/missing language code can produce captions such as ", ,".
     audio_languages = ", ".join(
-        parse_audio_language("", audio)
-        for audio in audio_metadata
-        if audio.get("Language")
+        dict.fromkeys(
+            filter(
+                None,
+                (parse_audio_language("", audio) for audio in audio_metadata),
+            )
+        )
     )
     subtitle_languages = ", ".join(
-        parse_subtitle_language("", subtitle)
-        for subtitle in subtitle_metadata
-        if subtitle.get("Language")
+        dict.fromkeys(
+            filter(
+                None,
+                (
+                    parse_subtitle_language("", subtitle)
+                    for subtitle in subtitle_metadata
+                ),
+            )
+        )
     )
 
     audio_languages = audio_languages or "Unknown"
@@ -113,47 +125,56 @@ def get_video_quality(height):
     return "Unknown"
 
 
-def parse_audio_language(existing_languages, audio_stream):
-    """
-    Parses the language from an audio stream and appends its display name
-    to the existing languages string if not already present.
+def _get_language_name(stream):
+    """Return a readable language label from a MediaInfo track, if available."""
+    # MediaInfo's human-readable fields are more reliable than parsing every
+    # container's raw ISO language code. Some files only provide the raw code.
+    for key in ("Language/String1", "Language/String"):
+        value = stream.get(key)
+        if isinstance(value, str) and value.strip():
+            language_name = value.strip()
+            if language_name.casefold() not in {
+                "unknown",
+                "undetermined",
+                "und",
+                "zxx",
+                "mis",
+            }:
+                return language_name
 
-    Args:
-        existing_languages: A string of already parsed audio languages.
-        audio_stream: A dictionary representing an audio stream from MediaInfo.
-
-    Returns:
-        An updated string of audio languages.
-    """
-    language_code = audio_stream.get("Language")
-    if language_code:
+    language_code = stream.get("Language")
+    if isinstance(language_code, str) and language_code.strip():
         with suppress(Exception):
-            language_name = Language.get(language_code).display_name()
-            if language_name not in existing_languages:
-                LOGGER.debug(f"Parsed audio language: {language_name}")
-                existing_languages += f"{language_name}, "
+            language_name = Language.get(language_code.strip().lower()).display_name()
+            if language_name and language_name.casefold() not in {
+                "unknown",
+                "undetermined",
+            }:
+                return language_name
+
+        # Preserve a useful raw code instead of silently returning an empty
+        # string when a container uses a code that langcodes cannot parse.
+        if language_code.strip().casefold() not in {"und", "zxx", "mis", "mul"}:
+            return language_code.strip()
+
+    return ""
+
+
+def parse_audio_language(existing_languages, audio_stream):
+    """Append an audio track's language to the existing language list."""
+    language_name = _get_language_name(audio_stream)
+    if language_name and language_name not in existing_languages:
+        LOGGER.debug(f"Parsed audio language: {language_name}")
+        existing_languages += f"{language_name}, "
     return existing_languages.strip(", ")
 
 
 def parse_subtitle_language(existing_subtitles, subtitle_stream):
-    """
-    Parses the language from a subtitle stream and appends its display name
-    to the existing subtitles string if not already present.
-
-    Args:
-        existing_subtitles: A string of already parsed subtitle languages.
-        subtitle_stream: A dictionary representing a subtitle stream from MediaInfo.
-
-    Returns:
-        An updated string of subtitle languages.
-    """
-    subtitle_code = subtitle_stream.get("Language")
-    if subtitle_code:
-        with suppress(Exception):
-            subtitle_name = Language.get(subtitle_code).display_name()
-            if subtitle_name not in existing_subtitles:
-                LOGGER.debug(f"Parsed subtitle language: {subtitle_name}")
-                existing_subtitles += f"{subtitle_name}, "
+    """Append a subtitle track's language to the existing subtitle list."""
+    subtitle_name = _get_language_name(subtitle_stream)
+    if subtitle_name and subtitle_name not in existing_subtitles:
+        LOGGER.debug(f"Parsed subtitle language: {subtitle_name}")
+        existing_subtitles += f"{subtitle_name}, "
     return existing_subtitles.strip(", ")
 
 
