@@ -145,7 +145,9 @@ def _get_language_name(stream):
     language_code = stream.get("Language")
     if isinstance(language_code, str) and language_code.strip():
         with suppress(Exception):
-            language_name = Language.get(language_code.strip().lower()).display_name()
+            language_name = Language.get(
+                language_code.strip().lower()
+            ).display_name()
             if language_name and language_name.casefold() not in {
                 "unknown",
                 "undetermined",
