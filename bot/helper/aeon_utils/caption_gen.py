@@ -144,20 +144,23 @@ def _get_language_name(stream):
 
     language_code = stream.get("Language")
     if isinstance(language_code, str) and language_code.strip():
+        code = language_code.strip()
+        if code.casefold() in {"und", "zxx", "mis", "mul"}:
+            return ""
+
         with suppress(Exception):
-            language_name = Language.get(
-                language_code.strip().lower()
-            ).display_name()
+            language_name = Language.get(code.lower()).display_name()
             if language_name and language_name.casefold() not in {
                 "unknown",
+                "unknown language",
                 "undetermined",
+                "no linguistic content",
             }:
                 return language_name
 
         # Preserve a useful raw code instead of silently returning an empty
         # string when a container uses a code that langcodes cannot parse.
-        if language_code.strip().casefold() not in {"und", "zxx", "mis", "mul"}:
-            return language_code.strip()
+        return code
 
     return ""
 
