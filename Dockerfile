@@ -4,7 +4,7 @@ WORKDIR /app
 RUN chmod 777 /app
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates curl python3.13-venv python3-pip \
+    && apt-get install -y --no-install-recommends ca-certificates curl unzip python3.13-venv python3-pip \
     && curl -fsSL https://deno.land/install.sh | DENO_INSTALL=/usr/local sh \
     && /usr/local/bin/deno --version \
     && rm -rf /var/lib/apt/lists/*
