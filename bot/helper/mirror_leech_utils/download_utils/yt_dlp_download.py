@@ -64,6 +64,8 @@ class YoutubeDLHelper:
             "logger": MyLogger(self, self._listener),
             "usenetrc": True,
             "cookiefile": "cookies.txt",
+            "js_runtimes": {"deno": {}},
+            "remote_components": {"ejs:github"},
             "allow_multiple_video_streams": True,
             "allow_multiple_audio_streams": True,
             "noprogress": True,
