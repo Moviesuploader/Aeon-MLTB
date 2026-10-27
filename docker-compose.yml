@@ -2,6 +2,7 @@ version: "3.8"
 
 services:
   aeon:
+    build: .
     security_opt:
       - apparmor=unconfined
     image: aeon-mltb-local:latest
