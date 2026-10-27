@@ -249,6 +249,12 @@ class YtSelection:
 
 
 def extract_info(link, options):
+    # Explicitly select Deno for YouTube's JavaScript challenge solver.
+    # Without a JS runtime, YouTube may expose only image formats and the
+    # quality selector can report "Requested format is not available".
+    options = dict(options)
+    options.setdefault("js_runtimes", {"deno": {}})
+    options.setdefault("remote_components", {"ejs:github"})
     with YoutubeDL(options) as ydl:
         result = ydl.extract_info(link, download=False)
         if result is None:
